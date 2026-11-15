@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}{% block title %}{{ c.complaint_code }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <a class="small" href="{{ url_for('staff.dashboard') }}">&larr; My assignments</a>
+  <div class="flex between mb"><h1 class="page-title">{{ c.complaint_code }}</h1>{{ badge(c.status) }}</div>
+  <div class="detail-grid"><div class="grid">
+    <div class="card"><h3>{{ c.title }}</h3><p class="muted mb" style="white-space:pre-line">{{ c.description }}</p>
+      <dl class="meta"><dt>Category</dt><dd>{{ c.category }}</dd><dt>Park</dt><dd>{{ c.park_name }}</dd><dt>Reported</dt><dd>{{ c.created_at|dt }}</dd><dt>GPS</dt><dd>{{ c.latitude }}, {{ c.longitude }}</dd></dl></div>
+    <div class="grid cols-2"><div class="card photo-frame"><h3>Issue photo</h3>{% if c.photo_path %}<img src="{{ url_for('static', filename=c.photo_path) }}" alt="Issue photo">{% else %}<p class="muted small">None.</p>{% endif %}</div>
+      <div class="card photo-frame"><h3>Completed repair</h3>{% if c.resolution_photo_path %}<img src="{{ url_for('static', filename=c.resolution_photo_path) }}" alt="Repair photo">{% else %}<p class="muted small">Not uploaded yet.</p>{% endif %}</div></div>
+    <div class="card"><h3>Location</h3><div class="map" id="trackMap" data-lat="{{ c.latitude }}" data-lng="{{ c.longitude }}" data-title="{{ c.complaint_code }}"></div></div></div>
+  <div class="grid" style="align-content:start">
+    <div class="card"><h3><i class="fa-solid fa-screwdriver-wrench"></i> Update progress</h3>
+      {% if c.status in ('Assigned','In Progress') %}
+      <form method="post" action="{{ url_for('staff.update', cid=c.id) }}" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label for="status">New status</label><select id="status" name="status"><option>In Progress</option><option>Resolved</option></select>
+        <label for="remark">Work remarks</label><textarea id="remark" name="remark" maxlength="1000" style="min-height:90px"></textarea>
+        <label for="repair_photo">Repair photo (required to mark completed)</label><input id="repair_photo" name="repair_photo" type="file" accept="image/jpeg,image/png,image/webp">
+        <button class="btn btn-primary btn-block mt">Save update</button></form>
+      {% else %}<p class="muted small">This complaint is <strong>{{ c.status }}</strong>. Contact the admin if it needs to be re-opened.</p>{% endif %}</div>
+    <div class="card"><h3>History</h3><ul class="timeline mt">{% for u in updates|reverse %}<li>{{ badge(u.new_status) }} <span class="muted small">{{ u.created_at|dt }} &middot; {{ u.actor_name }}</span>{% if u.remark %}<p class="small">{{ u.remark }}</p>{% endif %}</li>{% endfor %}</ul></div>
+  </div></div>
+</div></section>{% endblock %}
+{% block scripts %}<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script><script src="{{ url_for('static', filename='js/track.js') }}"></script>{% endblock %}

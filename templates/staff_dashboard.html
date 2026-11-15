@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}{% block title %}Staff Dashboard{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">My <span class="grad">Assignments</span></h1><p class="muted mb">{{ current_user.full_name }}{% if current_user.department %} &middot; {{ current_user.department }}{% endif %}</p>
+  <div class="grid cols-4 mb">
+    <div class="card kpi"><i class="fa-solid fa-list" style="color:var(--cyan)"></i><div class="v">{{ counts.Total }}</div><div class="l">Assigned to me</div></div>
+    <div class="card kpi"><i class="fa-solid fa-user-check" style="color:#b58cff"></i><div class="v">{{ counts.Assigned }}</div><div class="l">To start</div></div>
+    <div class="card kpi"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--orange)"></i><div class="v">{{ counts['In Progress'] }}</div><div class="l">In progress</div></div>
+    <div class="card kpi"><i class="fa-solid fa-circle-check" style="color:var(--neon)"></i><div class="v">{{ counts.Resolved }}</div><div class="l">Completed</div></div></div>
+  <div class="card mb"><h3><i class="fa-solid fa-map"></i> My job sites</h3><div class="map" id="adminMap" style="height:300px"></div></div>
+  <form method="get" class="inline-form mb"><select name="status" onchange="this.form.submit()" aria-label="Filter"><option value="">All statuses</option>{% for s in ['Assigned','In Progress','Resolved'] %}<option {{ 'selected' if s==status }}>{{ s }}</option>{% endfor %}</select></form>
+  {% if complaints %}<div class="table-wrap"><table><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Park</th><th>Status</th><th></th></tr></thead><tbody>
+    {% for c in complaints %}<tr><td>{{ c.complaint_code }}</td><td>{{ c.title }}</td><td>{{ c.category }}</td><td>{{ c.park_name }}</td><td>{{ badge(c.status) }}</td><td><a class="btn btn-ghost btn-sm" href="{{ url_for('staff.detail', cid=c.id) }}">Open</a></td></tr>{% endfor %}</tbody></table></div>
+  {% else %}<div class="card empty"><i class="fa-solid fa-mug-hot"></i><p>No complaints assigned to you right now.</p></div>{% endif %}
+  <script type="application/json" id="mapData">{{ points|tojson }}</script>
+</div></section>{% endblock %}
+{% block scripts %}<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>window.ADMIN_BASE="";window.POINT_URL=function(p){return "{{ url_for('staff.dashboard') }}complaints/"+p.id;};</script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>{% endblock %}

@@ -1,0 +1,7 @@
+<div class="subnav">
+  <a class="{{ 'on' if active=='dash' }}" href="{{ url_for('admin.dashboard') }}"><i class="fa-solid fa-gauge-high"></i> Overview</a>
+  <a class="{{ 'on' if active=='complaints' }}" href="{{ url_for('admin.complaints') }}"><i class="fa-solid fa-list-check"></i> Complaints</a>
+  <a class="{{ 'on' if active=='citizens' }}" href="{{ url_for('admin.citizens') }}"><i class="fa-solid fa-users"></i> Citizens</a>
+  <a class="{{ 'on' if active=='staff' }}" href="{{ url_for('admin.staff') }}"><i class="fa-solid fa-helmet-safety"></i> Staff</a>
+  <a class="{{ 'on' if active=='reports' }}" href="{{ url_for('admin.reports') }}"><i class="fa-solid fa-file-lines"></i> Reports</a>
+</div>

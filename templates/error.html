@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}{{ title }}{% endblock %}
+{% block content %}<section class="page"><div class="container center">
+  <div style="font-family:var(--display);font-size:clamp(4rem,12vw,8rem);line-height:1" class="grad">{{ code }}</div>
+  <h2 class="mt">{{ title }}</h2><p class="muted mb">{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('complaints.index') }}">Back to Home</a>
+</div></section>{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% from "_macros.html" import pager %}{% block title %}Citizens{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">Citizen <span class="grad">Accounts</span></h1>
+  {% set active='citizens' %}{% include "_admin_nav.html" %}
+  <form method="get" class="card mb"><div class="inline-form"><input name="q" placeholder="Search name or email" value="{{ q }}" aria-label="Search"><button class="btn btn-primary btn-sm">Search</button></div></form>
+  {% if citizens %}<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Complaints</th><th>Joined</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for u in citizens %}<tr><td>{{ u.full_name }}</td><td>{{ u.email }}</td><td>{{ u.phone or '—' }}</td><td>{{ u.complaint_count }}</td><td>{{ u.created_at|dt('%d %b %Y') }}</td>
+    <td><span class="badge {{ 'st-resolved' if u.is_active else 'st-rejected' }}">{{ 'Active' if u.is_active else 'Deactivated' }}</span></td>
+    <td><form method="post" action="{{ url_for('admin.toggle_citizen', uid=u.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-ghost' }}">{{ 'Deactivate' if u.is_active else 'Activate' }}</button></form></td></tr>{% endfor %}
+  </tbody></table></div>{{ pager(page, pages, 'admin.citizens', {'q': q} if q else {}) }}
+  {% else %}<div class="card empty"><i class="fa-solid fa-users"></i><p>No citizens found.</p></div>{% endif %}
+</div></section>{% endblock %}

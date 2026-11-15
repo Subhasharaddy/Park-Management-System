@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}{% block title %}Admin Dashboard{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">Admin <span class="grad">Control Centre</span></h1><p class="muted mb">Signed in as {{ current_user.full_name }}.</p>
+  {% set active='dash' %}{% include "_admin_nav.html" %}
+  <div class="grid cols-3 mb">
+    <div class="card kpi"><i class="fa-solid fa-layer-group" style="color:var(--cyan)"></i><div class="v">{{ counts.Total }}</div><div class="l">Total complaints</div></div>
+    <div class="card kpi"><i class="fa-solid fa-inbox" style="color:var(--cyan)"></i><div class="v">{{ counts.Submitted }}</div><div class="l">New (awaiting review)</div></div>
+    <div class="card kpi"><i class="fa-solid fa-hourglass-half" style="color:var(--yellow)"></i><div class="v">{{ counts.Pending }}</div><div class="l">Pending (not started)</div></div>
+    <div class="card kpi"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--orange)"></i><div class="v">{{ counts['In Progress'] }}</div><div class="l">In progress</div></div>
+    <div class="card kpi"><i class="fa-solid fa-circle-check" style="color:var(--neon)"></i><div class="v">{{ counts.Resolved }}</div><div class="l">Resolved</div></div>
+    <div class="card kpi"><i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i><div class="v">{{ counts.Rejected }}</div><div class="l">Rejected</div></div>
+  </div>
+  <div class="grid cols-2 mb">
+    <div class="card"><h3>Complaints by status</h3><div class="chart-box"><canvas id="chStatus"></canvas></div></div>
+    <div class="card"><h3>Complaints by category</h3><div class="chart-box"><canvas id="chCategory"></canvas></div></div>
+    <div class="card"><h3>Reported vs resolved (6 months)</h3><div class="chart-box"><canvas id="chMonthly"></canvas></div></div>
+    <div class="card"><h3>Most reported parks</h3><div class="chart-box"><canvas id="chParks"></canvas></div></div>
+  </div>
+  <div class="card mb"><h3><i class="fa-solid fa-map"></i> Complaint locations</h3><div class="map" id="adminMap" style="height:400px"></div></div>
+  <div class="card"><div class="flex between"><h3>Recent complaints</h3><a class="small" href="{{ url_for('admin.complaints') }}">View all &rarr;</a></div>
+    {% if recent %}<div class="table-wrap mt"><table><thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Status</th><th></th></tr></thead><tbody>
+      {% for c in recent %}<tr><td>{{ c.complaint_code }}</td><td>{{ c.title }}</td><td>{{ c.category }}</td><td>{{ badge(c.status) }}</td><td><a class="btn btn-ghost btn-sm" href="{{ url_for('admin.complaint_detail', cid=c.id) }}">Manage</a></td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<div class="empty"><i class="fa-solid fa-seedling"></i><p>No complaints yet.</p></div>{% endif %}</div>
+  <script type="application/json" id="chartData">{{ charts|tojson }}</script>
+  <script type="application/json" id="mapData">{{ points|tojson }}</script>
+</div></section>{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>window.ADMIN_BASE="{{ url_for('admin.complaints') }}";</script>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

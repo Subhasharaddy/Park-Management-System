@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Page not found{% endblock %}
+{% block content %}<section class="page"><div class="container center">
+  <div style="font-family:var(--display);font-size:clamp(5rem,16vw,10rem);line-height:1" class="grad">404</div>
+  <h2 class="mt">This path leads nowhere&hellip;</h2>
+  <p class="muted mb">Looks like this part of the park hasn't been planted yet.</p>
+  <div class="flash-trees" style="font-size:3rem;margin:10px 0 26px">&#127795; &#127807; &#129419; &#127803;</div>
+  <a class="btn btn-primary" href="{{ url_for('complaints.index') }}"><i class="fa-solid fa-house"></i> Back to Home</a>
+</div></section>{% endblock %}

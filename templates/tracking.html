@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}{% block title %}Track Complaint{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">Track your <span class="grad">Complaint</span></h1>
+  <p class="muted mb">Enter your complaint ID (for example <strong>PC-2026-0001</strong>){% if mine %} or pick one of your complaints{% endif %}.</p>
+  <div class="card mb">
+    <form method="get" action="{{ url_for('complaints.track_form') }}" class="inline-form">
+      <input name="code" placeholder="PC-2026-0001" value="{{ c.complaint_code if c else '' }}" required aria-label="Complaint ID">
+      {% if mine %}<select aria-label="My complaints" onchange="if(this.value)location.href='{{ url_for('complaints.track_form') }}/'+this.value">
+        <option value="">&mdash; or choose from my complaints &mdash;</option>
+        {% for m in mine %}<option value="{{ m.complaint_code }}">{{ m.complaint_code }} &middot; {{ m.title[:40] }}</option>{% endfor %}</select>{% endif %}
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-magnifying-glass"></i> Track</button>
+    </form>
+  </div>
+
+  {% if c %}
+  <div class="card" id="trackCard" data-code="{{ c.complaint_code }}" data-status="{{ c.status }}">
+    <div class="flex between"><div><span class="muted small">Complaint ID</span><h2 style="font-family:var(--display)">{{ c.complaint_code }}</h2></div>{{ badge(c.status) }}</div>
+    {% if step >= 0 %}
+    <div class="tracker">
+      <div class="fill" style="width:{{ (step / (steps|length - 1)) * 88 }}%"></div>
+      {% for s in steps %}<div class="tstep {{ 'done' if loop.index0 <= step }} {{ 'now' if loop.index0 == step }}">
+        <div class="dot"><i class="fa-solid {{ 'fa-check' if loop.index0 < step else ['fa-inbox','fa-eye','fa-user-check','fa-screwdriver-wrench','fa-flag-checkered'][loop.index0] }}"></i></div>{{ s }}</div>{% endfor %}
+    </div>
+    {% else %}
+    <div class="rejected-banner"><strong><i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i> This complaint was rejected.</strong>
+      <p class="mt">Reason: {{ c.rejection_reason or 'No reason recorded.' }}</p></div>
+    {% endif %}
+  </div>
+
+  <div class="detail-grid mt">
+    <div class="grid">
+      <div class="card"><h3>{{ c.title }}</h3><p class="muted mb" style="white-space:pre-line">{{ c.description }}</p>
+        <dl class="meta">
+          <dt>Category</dt><dd>{{ c.category }}</dd><dt>Park</dt><dd>{{ c.park_name }}</dd>
+          <dt>Submitted</dt><dd>{{ c.created_at|dt }}</dd><dt>Last update</dt><dd>{{ c.updated_at|dt }}</dd>
+          <dt>Assigned staff</dt><dd>{{ c.staff_name or 'Not assigned yet' }}</dd>
+          <dt>GPS</dt><dd>{{ c.latitude }}, {{ c.longitude }}</dd>
+          {% if c.resolved_at %}<dt>Resolved</dt><dd>{{ c.resolved_at|dt }}</dd>{% endif %}</dl></div>
+      <div class="grid cols-2">
+        <div class="card photo-frame"><h3>Issue photo</h3>{% if c.photo_path %}<a href="{{ url_for('static', filename=c.photo_path) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename=c.photo_path) }}" alt="Issue photo"></a>{% else %}<p class="muted small">No photo was uploaded.</p>{% endif %}</div>
+        <div class="card photo-frame"><h3>Resolution photo</h3>{% if c.resolution_photo_path %}<a href="{{ url_for('static', filename=c.resolution_photo_path) }}" target="_blank" rel="noopener"><img src="{{ url_for('static', filename=c.resolution_photo_path) }}" alt="Resolution photo"></a>{% else %}<p class="muted small">Available once the repair is completed.</p>{% endif %}</div>
+      </div>
+      <div class="card"><h3>Location</h3><div class="map" id="trackMap" data-lat="{{ c.latitude }}" data-lng="{{ c.longitude }}" data-title="{{ c.complaint_code }}"></div></div>
+    </div>
+    <div class="card"><h3><i class="fa-solid fa-clock-rotate-left"></i> Updates from the team</h3>
+      <ul class="timeline mt">
+      {% for u in updates|reverse %}<li><div>{{ badge(u.new_status) }} <span class="muted small">{{ u.created_at|dt }}</span></div>
+        <div class="small muted">{{ u.actor_name }} ({{ u.actor_role }})</div>
+        {% if u.remark %}<p class="small">{{ u.remark }}</p>{% endif %}
+        {% if u.photo_path %}<a href="{{ url_for('static', filename=u.photo_path) }}" target="_blank" rel="noopener" class="small">View attached photo</a>{% endif %}</li>{% endfor %}
+      </ul></div>
+  </div>
+  {% elif not mine %}<div class="empty"><i class="fa-solid fa-route"></i><p>Your complaint's journey will appear here.</p></div>{% endif %}
+</div></section>{% endblock %}
+{% block scripts %}{% if c %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{{ url_for('static', filename='js/track.js') }}"></script>{% endif %}{% endblock %}

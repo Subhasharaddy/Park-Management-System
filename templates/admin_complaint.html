@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}{% block title %}{{ c.complaint_code }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <a class="small" href="{{ url_for('admin.complaints') }}">&larr; All complaints</a>
+  <div class="flex between mb"><h1 class="page-title">{{ c.complaint_code }}</h1>{{ badge(c.status) }}</div>
+  <div class="detail-grid">
+    <div class="grid">
+      <div class="card"><h3>{{ c.title }}</h3><p class="muted mb" style="white-space:pre-line">{{ c.description }}</p>
+        <dl class="meta"><dt>Category</dt><dd>{{ c.category }}</dd><dt>Park</dt><dd>{{ c.park_name }}</dd>
+          <dt>Citizen</dt><dd>{{ c.citizen_name }} ({{ c.citizen_email }})</dd><dt>Submitted</dt><dd>{{ c.created_at|dt }}</dd>
+          <dt>Assigned to</dt><dd>{{ c.staff_name or 'Nobody yet' }}</dd><dt>GPS</dt><dd>{{ c.latitude }}, {{ c.longitude }}</dd>
+          {% if c.rejection_reason %}<dt>Rejection</dt><dd>{{ c.rejection_reason }}</dd>{% endif %}</dl></div>
+      <div class="grid cols-2">
+        <div class="card photo-frame"><h3>Issue photo</h3>{% if c.photo_path %}<img src="{{ url_for('static', filename=c.photo_path) }}" alt="Issue photo">{% else %}<p class="muted small">None uploaded.</p>{% endif %}</div>
+        <div class="card photo-frame"><h3>Resolution photo</h3>{% if c.resolution_photo_path %}<img src="{{ url_for('static', filename=c.resolution_photo_path) }}" alt="Resolution photo">{% else %}<p class="muted small">None yet.</p>{% endif %}</div></div>
+      <div class="card"><h3>Location</h3><div class="map" id="trackMap" data-lat="{{ c.latitude }}" data-lng="{{ c.longitude }}" data-title="{{ c.complaint_code }}"></div></div>
+      <div class="card"><h3>History</h3><ul class="timeline mt">{% for u in updates|reverse %}<li>{{ badge(u.new_status) }} <span class="muted small">{{ u.created_at|dt }} &middot; {{ u.actor_name }} ({{ u.actor_role }})</span>{% if u.remark %}<p class="small">{{ u.remark }}</p>{% endif %}</li>{% endfor %}</ul></div>
+    </div>
+    <div class="grid" style="align-content:start">
+      <div class="card"><h3><i class="fa-solid fa-user-plus"></i> Assign staff</h3>
+        <form method="post" action="{{ url_for('admin.assign', cid=c.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="staff_id">Staff member</label><select id="staff_id" name="staff_id" required><option value="">Select&hellip;</option>{% for s in staff_list %}<option value="{{ s.id }}" {{ 'selected' if s.id==c.assigned_staff_id }}>{{ s.full_name }}{% if s.department %} ({{ s.department }}){% endif %}</option>{% endfor %}</select>
+          <label for="a_remark">Note (visible to citizen)</label><input id="a_remark" name="remark" maxlength="500">
+          <button class="btn btn-primary btn-sm mt">Assign</button></form></div>
+      <div class="card"><h3><i class="fa-solid fa-pen"></i> Update status / remarks</h3>
+        <form method="post" action="{{ url_for('admin.update_status', cid=c.id) }}" enctype="multipart/form-data"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="status">Status</label><select id="status" name="status">{% for s in STATUSES %}<option {{ 'selected' if s==c.status }}>{{ s }}</option>{% endfor %}</select>
+          <div id="staffPick" style="display:none"><label for="st_staff">Staff (required for Assigned)</label><select id="st_staff" name="staff_id"><option value="">Keep current</option>{% for s in staff_list %}<option value="{{ s.id }}">{{ s.full_name }}</option>{% endfor %}</select></div>
+          <div id="rejectBox" style="display:none"><label for="rejection_reason">Rejection reason *</label><input id="rejection_reason" name="rejection_reason" maxlength="500"></div>
+          <label for="remark">Administrative remark (visible to citizen)</label><textarea id="remark" name="remark" maxlength="1000" style="min-height:80px"></textarea>
+          <label for="resolution_photo">Resolution photo (optional)</label><input id="resolution_photo" name="resolution_photo" type="file" accept="image/jpeg,image/png,image/webp">
+          <button class="btn btn-accent btn-sm mt">Save update</button></form></div>
+      <div class="card danger-zone"><h3 style="color:var(--danger)"><i class="fa-solid fa-triangle-exclamation"></i> Delete complaint</h3>
+        <p class="muted small">For duplicates or inappropriate content. This permanently removes the complaint, its history and photos.</p>
+        <form method="post" action="{{ url_for('admin.delete_complaint', cid=c.id) }}" onsubmit="return confirm('Permanently delete {{ c.complaint_code }}?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="confirm_code">Type <strong>{{ c.complaint_code }}</strong> to confirm</label><input id="confirm_code" name="confirm_code" required autocomplete="off">
+          <button class="btn btn-danger btn-sm mt">Delete permanently</button></form></div>
+    </div>
+  </div>
+</div></section>{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{{ url_for('static', filename='js/track.js') }}"></script>
+<script>
+const sel=document.getElementById('status');function sync(){document.getElementById('rejectBox').style.display=sel.value==='Rejected'?'block':'none';document.getElementById('staffPick').style.display=sel.value==='Assigned'?'block':'none';}
+sel.addEventListener('change',sync);sync();
+</script>{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Staff{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">Staff <span class="grad">Management</span></h1>
+  {% set active='staff' %}{% include "_admin_nav.html" %}
+  <div class="detail-grid"><div>
+    {% if staff_list %}<div class="grid">{% for s in staff_list %}
+      <div class="card"><div class="flex between"><h3>{{ s.full_name }}</h3><span class="badge {{ 'st-resolved' if s.is_active else 'st-rejected' }}">{{ 'Active' if s.is_active else 'Inactive' }}</span></div>
+        <p class="muted small">{{ s.email }} &middot; {{ s.department or 'No department' }} &middot; open: {{ s.open_count }} &middot; completed: {{ s.done_count }}</p>
+        <details class="mt"><summary class="small" style="cursor:pointer;color:var(--neon)">Edit details</summary>
+          <form method="post" action="{{ url_for('admin.edit_staff', sid=s.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label>Name</label><input name="full_name" required value="{{ s.full_name }}"><div class="form-row"><div><label>Phone</label><input name="phone" value="{{ s.phone or '' }}"></div><div><label>Department</label><input name="department" value="{{ s.department or '' }}"></div></div>
+            <label>Reset password (optional)</label><input name="new_password" type="password" autocomplete="new-password"><button class="btn btn-primary btn-sm mt">Save</button></form></details>
+        <form class="mt" method="post" action="{{ url_for('admin.toggle_staff', sid=s.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm {{ 'btn-danger' if s.is_active else 'btn-ghost' }}">{{ 'Deactivate' if s.is_active else 'Activate' }}</button></form></div>{% endfor %}</div>
+    {% else %}<div class="card empty"><i class="fa-solid fa-helmet-safety"></i><p>No staff yet. Create the first account.</p></div>{% endif %}
+  </div>
+  <div class="card" style="align-self:start"><h3><i class="fa-solid fa-user-plus"></i> New staff account</h3>
+    <form method="post" novalidate data-validate><input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="n_name">Full name *</label><input id="n_name" name="full_name" required minlength="2"><label for="n_email">Email *</label><input id="n_email" name="email" type="email" required>
+      <label for="n_phone">Phone</label><input id="n_phone" name="phone"><label for="n_dept">Department</label><input id="n_dept" name="department" placeholder="e.g. Horticulture">
+      <label for="n_pw">Initial password *</label><input id="n_pw" name="password" type="password" required minlength="8" autocomplete="new-password"><p class="hint">8+ characters with letters and digits.</p>
+      <button class="btn btn-primary btn-block mt">Create staff account</button></form></div></div>
+</div></section>{% endblock %}

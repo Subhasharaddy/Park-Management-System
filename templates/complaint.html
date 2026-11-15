@@ -1,0 +1,46 @@
+{% extends "base.html" %}{% block title %}Report an Issue{% endblock %}
+{% block head %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">Report a <span class="grad">Park Issue</span></h1>
+  <p class="muted mb">Fields marked * are required. Your complaint ID is generated once you submit.</p>
+  <form method="post" enctype="multipart/form-data" novalidate data-validate id="reportForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid cols-2">
+      <div class="card">
+        <label>Issue category *</label>
+        <div class="stickers">
+          {% for name, icon, color in CATEGORIES %}
+          <label class="sticker" style="--c:{{ color }}"><input type="radio" name="category" value="{{ name }}" {{ 'checked' if form.get('category')==name }} required>
+            <span class="face"><i class="fa-solid {{ icon }}"></i>{{ name }}</span></label>{% endfor %}
+        </div>
+        <label for="title">Complaint title *</label><input id="title" name="title" required minlength="5" maxlength="150" value="{{ form.get('title','') }}" placeholder="e.g. Bench broken near the fountain">
+        <label for="description">Description *</label><textarea id="description" name="description" required minlength="10" maxlength="2000" placeholder="Describe the problem and exactly where it is">{{ form.get('description','') }}</textarea>
+        <label for="park_id">Park *</label>
+        <select id="park_id" name="park_id" required>
+          <option value="">Select a park</option>
+          {% for p in parks %}<option value="{{ p.id }}" data-lat="{{ p.latitude }}" data-lng="{{ p.longitude }}" {{ 'selected' if form.get('park_id')==p.id|string }}>{{ p.name }}</option>{% endfor %}
+          <option value="other" {{ 'selected' if form.get('park_id')=='other' }}>Other (type below)</option>
+        </select>
+        <input id="park_other" name="park_other" placeholder="Park name" maxlength="150" style="display:none;margin-top:10px" value="{{ form.get('park_other','') }}">
+        <label for="photo">Issue photograph</label><input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+        <p class="hint">JPG, PNG or WEBP, up to 8 MB. Location metadata in the photo is removed.</p>
+        <img id="photoPreview" class="photo-preview" alt="Selected photo preview">
+      </div>
+      <div class="card">
+        <div class="flex between"><h3><i class="fa-solid fa-map-location-dot"></i> Location *</h3>
+          <button type="button" class="btn btn-ghost btn-sm" id="gpsBtn"><i class="fa-solid fa-location-crosshairs"></i> Use my GPS</button></div>
+        <p class="hint mb" id="gpsMsg">Click the map to drop a pin, drag the pin, or use GPS (needs your permission).</p>
+        <div id="map" data-lat="{{ default_lat }}" data-lng="{{ default_lng }}"></div>
+        <div class="form-row"><div><label for="latitude">Latitude</label><input id="latitude" name="latitude" required readonly value="{{ form.get('latitude','') }}"></div>
+        <div><label for="longitude">Longitude</label><input id="longitude" name="longitude" required readonly value="{{ form.get('longitude','') }}"></div></div>
+        <label for="when">Date &amp; time</label><input id="when" readonly disabled>
+        <p class="hint">Recorded automatically by the server when you submit.</p>
+      </div>
+    </div>
+    <div class="center mt"><button class="btn btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Submit complaint</button></div>
+  </form>
+</div></section>{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{{ url_for('static', filename='js/report.js') }}"></script>
+{% endblock %}

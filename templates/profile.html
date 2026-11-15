@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}My Profile{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <h1 class="page-title">My <span class="grad">Profile</span></h1>
+  <div class="subnav"><a href="{{ url_for('citizen.dashboard') }}">Dashboard</a><a class="on" href="{{ url_for('citizen.profile') }}">Profile</a><a href="{{ url_for('citizen.notifications') }}">Notifications</a></div>
+  <div class="auth-wrap" style="margin:0"><div class="card"><form method="post" novalidate data-validate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="email">Email (cannot be changed)</label><input id="email" value="{{ current_user.email }}" disabled>
+    <label for="full_name">Full name</label><input id="full_name" name="full_name" required value="{{ current_user.full_name }}">
+    <label for="phone">Phone</label><input id="phone" name="phone" value="{{ current_user.phone or '' }}">
+    <hr style="border:0;border-top:1px solid var(--line);margin:22px 0 4px">
+    <p class="hint">Change password (optional)</p>
+    <label for="current_password">Current password</label><input id="current_password" name="current_password" type="password" autocomplete="current-password">
+    <label for="new_password">New password</label><input id="new_password" name="new_password" type="password" autocomplete="new-password">
+    <button class="btn btn-primary mt" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save changes</button>
+  </form></div></div></div></section>{% endblock %}

@@ -1,0 +1,311 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+
+<title>{% block title %}Park Management System{% endblock %} | Smart Park Maintenance</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+{% block head %}{% endblock %}
+</head>
+
+<body class="{% block body_class %}{% endblock %}">
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+    <div class="loader-box">
+        <div class="loader-leaf">
+            <i class="fa-solid fa-leaf"></i>
+        </div>
+
+        <div class="loader-logo">
+            PARK <span style="color:var(--orange)">MANAGEMENT</span> SYSTEM
+        </div>
+
+        <div class="loader-bar">
+            <i></i>
+        </div>
+    </div>
+</div>
+
+<!-- BACKGROUND ANIMATION -->
+<canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+<!-- NAVIGATION BAR -->
+<header class="nav" id="nav">
+    <div class="container">
+
+        <a class="logo" href="{{ url_for('complaints.index') }}">
+            <i class="fa-solid fa-tree"></i>
+            PARK <b>MANAGEMENT SYSTEM</b>
+        </a>
+
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <ul class="nav-links" id="navLinks">
+
+            <li>
+                <a href="{{ url_for('complaints.index') }}">Home</a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('complaints.index') }}#about">About</a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('complaints.index') }}#services">Services</a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('complaints.report') }}">Report an Issue</a>
+            </li>
+
+            <li>
+                <a href="{{ url_for('complaints.track_form') }}">Track Complaint</a>
+            </li>
+
+            {% if current_user %}
+
+                {% if role == 'citizen' %}
+
+                    <li>
+                        <a href="{{ url_for('citizen.dashboard') }}">
+                            My Dashboard
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('citizen.notifications') }}" title="Notifications">
+                            <i class="fa-solid fa-bell"></i>
+
+                            {% if unread_count %}
+                                <span class="badge-dot" id="unreadBadge">
+                                    {{ unread_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+                    </li>
+
+                {% elif role == 'admin' %}
+
+                    <li>
+                        <a href="{{ url_for('admin.dashboard') }}">
+                            Admin Panel
+                        </a>
+                    </li>
+
+                {% else %}
+
+                    <li>
+                        <a href="{{ url_for('staff.dashboard') }}">
+                            My Work
+                        </a>
+                    </li>
+
+                {% endif %}
+
+                <li>
+                    <form class="nav-form" method="post" action="{{ url_for('auth.logout') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-ghost btn-sm">Logout</button>
+                    </form>
+                </li>
+
+            {% else %}
+
+                <li>
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                </li>
+
+                <li>
+                    <a class="btn btn-primary btn-sm" href="{{ url_for('auth.register') }}">
+                        Get Started
+                    </a>
+                </li>
+
+            {% endif %}
+
+        </ul>
+    </div>
+</header>
+
+<!-- FLASH MESSAGES -->
+<div class="flashes" id="flashes">
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+
+        {% for cat, m in msgs %}
+
+            <div class="flash {{ cat }}" role="alert">
+                <span>{{ m }}</span>
+                <button type="button" aria-label="Dismiss">&times;</button>
+            </div>
+
+        {% endfor %}
+
+    {% endwith %}
+
+</div>
+
+<!-- MAIN PAGE CONTENT -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+
+        <div class="grid cols-4">
+
+            <!-- ABOUT PROJECT -->
+            <div>
+
+                <a class="logo" href="{{ url_for('complaints.index') }}">
+                    <i class="fa-solid fa-tree"></i>
+                    PARK <b>MANAGEMENT SYSTEM</b>
+                </a>
+
+                <p class="muted small mt">
+                    A smart platform for reporting and tracking maintenance
+                    issues in public parks and gardens.
+                </p>
+
+                <div class="social">
+
+                    <a href="#" aria-label="Facebook">
+                        <i class="fa-brands fa-facebook-f"></i>
+                    </a>
+
+                    <a href="#" aria-label="X">
+                        <i class="fa-brands fa-x-twitter"></i>
+                    </a>
+
+                    <a href="#" aria-label="Instagram">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+
+                    <a href="#" aria-label="GitHub">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- QUICK LINKS -->
+            <div>
+
+                <h4>QUICK LINKS</h4>
+
+                <ul>
+                    <li>
+                        <a href="{{ url_for('complaints.report') }}">
+                            Report an Issue
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('complaints.track_form') }}">
+                            Track Complaint
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('auth.register') }}">
+                            Create Account
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('auth.login', role='staff') }}">
+                            Staff Login
+                        </a>
+                    </li>
+
+                    <li>
+                        <a href="{{ url_for('auth.login', role='admin') }}">
+                            Admin Login
+                        </a>
+                    </li>
+                </ul>
+
+            </div>
+
+            <!-- CONTACT -->
+            <div>
+
+                <h4>CONTACT</h4>
+
+                <ul class="small">
+
+                    <li>
+                        <i class="fa-solid fa-envelope"></i>
+                        support@parkcare.local
+                    </li>
+
+                    <li>
+                        <i class="fa-solid fa-phone"></i>
+                        +00 000 000 0000
+                    </li>
+
+                    <li>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Parks &amp; Gardens Department
+                    </li>
+
+                </ul>
+
+            </div>
+
+            <!-- PROJECT INFORMATION -->
+            <div>
+
+                <h4>PROJECT</h4>
+
+                <p class="muted small">
+                    College mini project:
+                    <em>
+                        Application for citizens to report maintenance
+                        issues in public parks and gardens and track resolution.
+                    </em>
+                </p>
+
+                <p class="muted small mt">
+                    Flask &middot; MySQL &middot; Three.js &middot; Leaflet
+                </p>
+
+            </div>
+
+        </div>
+
+        <!-- COPYRIGHT -->
+        <div class="copy">
+            &copy; {{ 2026 }} Park Management System.
+            Built for a cleaner, greener tomorrow.
+        </div>
+
+    </div>
+</footer>
+
+<!-- JAVASCRIPT LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+{% block scripts %}{% endblock %}
+
+</body>
+</html>
+```

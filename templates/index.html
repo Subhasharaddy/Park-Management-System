@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<section class="hero" id="home">
+  <canvas id="hero-canvas" aria-hidden="true"></canvas>
+  <div class="hero-fallback" aria-hidden="true"></div>
+
+  <div class="container">
+    <div class="hero-content">
+      <span class="eyebrow" data-anim>SMART PUBLIC PARK MAINTENANCE</span>
+      <h1 id="heroTitle">BUILDING CLEANER, <span class="grad">GREENER</span> &amp; SMARTER PARKS</h1>
+      <p data-anim>
+        Report park maintenance issues, track their progress and help create
+        beautiful public spaces for everyone.
+      </p>
+      <div class="flex" data-anim>
+        <a class="btn btn-primary" href="{{ url_for('complaints.report') }}">
+          <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+          Report an Issue
+        </a>
+        <a class="btn btn-ghost" href="#services">
+          <i class="fa-solid fa-compass" aria-hidden="true"></i>
+          Explore Our Platform
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint"><i class="fa-solid fa-chevron-down" aria-hidden="true"></i> scroll</div>
+</section>
+
+<section class="section" id="about">
+  <div class="container">
+    <h2 class="section-title">ABOUT <span>PARKCARE 3D</span></h2>
+    <p class="section-sub">
+      Public parks belong to everyone. ParkCare 3D gives citizens a direct line
+      to the authorities: report a broken bench, a leaking pipe or an overflowing
+      bin with a photo and GPS location, then follow the repair until it is fixed.
+    </p>
+
+    <div class="grid cols-4" id="stats">
+      <div class="card stat">
+        <div class="num" data-count="{{ stats.total }}">0</div>
+        <div class="lbl">Total Complaints</div>
+      </div>
+      <div class="card stat">
+        <div class="num" data-count="{{ stats.resolved }}">0</div>
+        <div class="lbl">Resolved</div>
+      </div>
+      <div class="card stat">
+        <div class="num" data-count="{{ stats.pending }}">0</div>
+        <div class="lbl">Pending</div>
+      </div>
+      <div class="card stat">
+        <div class="num" data-count="{{ stats.parks }}">0</div>
+        <div class="lbl">Parks Covered</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="issues">
+  <div class="container">
+    <h2 class="section-title">COMMON <span>PARK ISSUES</span></h2>
+    <p class="section-sub">
+      Spot one of these? Report it in under a minute. Hover the scenes to tilt them.
+    </p>
+
+    <div class="grid cols-3 issue-grid">
+      {% for scene, icon, name, text in [
+        ('bench', 'fa-chair', 'Broken Park Bench', 'Loose slats and damaged frames make seating unsafe.'),
+        ('leak', 'fa-droplet', 'Water Leakage', 'Leaking pipes waste water and flood walking areas.'),
+        ('path', 'fa-road', 'Damaged Walking Path', 'Cracked or missing tiles are a trip hazard.'),
+        ('bin', 'fa-trash-can', 'Overflowing Dustbin', 'Uncollected waste spoils the park and attracts pests.'),
+        ('light', 'fa-lightbulb', 'Broken Street Light', 'Dark paths are unsafe after sunset.'),
+        ('play', 'fa-child-reaching', 'Damaged Playground', 'Broken swings and slides put children at risk.')
+      ] %}
+        <article class="card issue-card tilt" data-anim>
+          <div class="issue-canvas" data-scene="{{ scene }}">
+            <img
+              class="issue-photo"
+              src="{{ url_for('static', filename='images/issue-' ~ scene ~ '.jpg') }}"
+              alt="{{ name }} in a public park"
+              loading="lazy"
+              decoding="async"
+              onerror="this.hidden=true; this.parentElement.classList.add('image-missing');"
+            >
+
+            <div class="issue-photo-shade" aria-hidden="true"></div>
+            <div class="fb" aria-hidden="true">
+              <i class="fa-solid {{ icon }}"></i>
+            </div>
+          </div>
+
+          <div class="issue-body">
+            <h3>
+              <i class="fa-solid {{ icon }}" aria-hidden="true"></i>
+              {{ name }}
+            </h3>
+            <p class="muted small">{{ text }}</p>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="container">
+    <h2 class="section-title">PLATFORM <span>FEATURES</span></h2>
+    <p class="section-sub">Everything citizens, staff and administrators need in one place.</p>
+
+    <div class="grid cols-3">
+      {% for icon, title, text, c1, c2 in [
+        ('fa-pen-to-square', 'Easy Complaint Reporting', 'A simple guided form with category stickers and instant complaint ID.', '#39FF88', '#12c26a'),
+        ('fa-location-crosshairs', 'GPS Location Detection', 'Detect your position automatically or pin the spot on the map.', '#00D9FF', '#0a86c8'),
+        ('fa-camera', 'Photo Upload', 'Attach a photograph so crews know exactly what to fix.', '#FF8A24', '#ff5a1f'),
+        ('fa-chart-line', 'Live Complaint Tracking', 'Follow every step from submission to resolution.', '#FFD447', '#ffa800'),
+        ('fa-user-shield', 'Admin Management', 'Review, assign, update and report on every complaint.', '#b58cff', '#7a4dff'),
+        ('fa-circle-check', 'Resolution Verification', 'Staff upload completion photos so you can see the fix.', '#39FF88', '#00D9FF')
+      ] %}
+        <div class="card feature tilt" data-anim>
+          <div class="icon3d" style="--c1:{{ c1 }}; --c2:{{ c2 }}">
+            <i class="fa-solid {{ icon }}" aria-hidden="true"></i>
+          </div>
+          <h3>{{ title }}</h3>
+          <p class="muted small">{{ text }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="how">
+  <div class="container">
+    <h2 class="section-title">HOW IT <span>WORKS</span></h2>
+    <p class="section-sub">Four simple steps from problem to solution.</p>
+
+    <div class="steps" id="steps">
+      <div class="step">
+        <div class="n"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></div>
+        <h3>1. Identify</h3>
+        <p class="muted small">Spot a maintenance issue in your park.</p>
+      </div>
+      <div class="step">
+        <div class="n"><i class="fa-solid fa-camera-retro" aria-hidden="true"></i></div>
+        <h3>2. Submit</h3>
+        <p class="muted small">Send a complaint with a photo and GPS location.</p>
+      </div>
+      <div class="step">
+        <div class="n"><i class="fa-solid fa-user-check" aria-hidden="true"></i></div>
+        <h3>3. Review &amp; Assign</h3>
+        <p class="muted small">Authorities review it and assign a staff member.</p>
+      </div>
+      <div class="step">
+        <div class="n"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i></div>
+        <h3>4. Track &amp; Resolve</h3>
+        <p class="muted small">Watch the repair progress until it is resolved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta" data-anim>
+      <h2>YOUR PARK. YOUR RESPONSIBILITY. <span class="grad">OUR FUTURE.</span></h2>
+      <a class="btn btn-accent" href="{{ url_for('complaints.report') }}">
+        <i class="fa-solid fa-bullhorn" aria-hidden="true"></i>
+        REPORT A PROBLEM TODAY
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="{{ url_for('static', filename='js/hero-scene.js') }}"></script>
+<script src="{{ url_for('static', filename='js/issue-scenes.js') }}"></script>
+{% endblock %}

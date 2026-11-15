@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, pager %}{% block title %}My Dashboard{% endblock %}
+{% block content %}<section class="page"><div class="container">
+  <div class="flex between mb"><div><h1 class="page-title">Hello, <span class="grad">{{ current_user.full_name }}</span></h1><p class="muted">Your complaint history and live status.</p></div>
+    <a class="btn btn-primary" href="{{ url_for('complaints.report') }}"><i class="fa-solid fa-plus"></i> New complaint</a></div>
+  <div class="subnav"><a class="on" href="{{ url_for('citizen.dashboard') }}">Dashboard</a><a href="{{ url_for('citizen.profile') }}">Profile</a><a href="{{ url_for('citizen.notifications') }}">Notifications{% if unread_count %} ({{ unread_count }}){% endif %}</a></div>
+  <div class="grid cols-4 mb">
+    <div class="card kpi"><i class="fa-solid fa-list" style="color:var(--cyan)"></i><div class="v">{{ counts.Total }}</div><div class="l">Total</div></div>
+    <div class="card kpi"><i class="fa-solid fa-hourglass-half" style="color:var(--yellow)"></i><div class="v">{{ counts.Pending }}</div><div class="l">Pending</div></div>
+    <div class="card kpi"><i class="fa-solid fa-screwdriver-wrench" style="color:var(--orange)"></i><div class="v">{{ counts['In Progress'] }}</div><div class="l">In progress</div></div>
+    <div class="card kpi"><i class="fa-solid fa-circle-check" style="color:var(--neon)"></i><div class="v">{{ counts.Resolved }}</div><div class="l">Resolved</div></div>
+  </div>
+  <div class="detail-grid">
+    <div>
+      <form class="inline-form mb" method="get"><select name="status" onchange="this.form.submit()" aria-label="Filter by status"><option value="">All statuses</option>{% for s in STATUSES %}<option {{ 'selected' if s==status }}>{{ s }}</option>{% endfor %}</select></form>
+      {% if complaints %}<div class="table-wrap"><table><thead><tr><th>ID</th><th>Title</th><th>Park</th><th>Status</th><th>Date</th></tr></thead><tbody>
+        {% for c in complaints %}<tr><td><a href="{{ url_for('complaints.track', code=c.complaint_code) }}">{{ c.complaint_code }}</a></td><td>{{ c.title }}</td><td>{{ c.park_name }}</td><td>{{ badge(c.status) }}</td><td>{{ c.created_at|dt('%d %b %Y') }}</td></tr>{% endfor %}
+      </tbody></table></div>{{ pager(page, pages, 'citizen.dashboard', {'status': status} if status else {}) }}
+      {% else %}<div class="card empty"><i class="fa-solid fa-seedling"></i><p>No complaints yet.</p><a class="btn btn-primary mt" href="{{ url_for('complaints.report') }}">Report your first issue</a></div>{% endif %}
+    </div>
+    <div class="card"><h3><i class="fa-solid fa-bell"></i> Latest notifications</h3>
+      {% for n in notes %}<div class="notif {{ 'unread' if not n.is_read }}"><div><div class="small">{{ n.message }}</div><div class="muted small">{{ n.created_at|dt }}</div></div></div>
+      {% else %}<p class="muted small mt">Nothing yet.</p>{% endfor %}
+      <a class="small" href="{{ url_for('citizen.notifications') }}">View all &rarr;</a></div>
+  </div>
+</div></section>{% endblock %}
